@@ -1,0 +1,23 @@
+{
+   "resources" : {
+      "repository" : "origin"
+   },
+   "meta-spec" : {
+      "version" : 1.4,
+      "url" : "http://module-build.sourceforge.net/META-spec-v1.4.html"
+   },
+   "generated_by" : "Dist::Zilla version 1.092990",
+   "version" : "0.093020",
+   "name" : "Pod-Elemental-PerlMunger",
+   "author" : [
+      "Ricardo SIGNES <rjbs@cpan.org>"
+   ],
+   "license" : "perl",
+   "requires" : {
+      "PPI" : "0",
+      "Pod::Elemental" : "0.092941",
+      "namespace::autoclean" : "0",
+      "Moose" : "0"
+   },
+   "abstract" : "a thing that takes a string of Perl and rewrites its documentation"
+}
