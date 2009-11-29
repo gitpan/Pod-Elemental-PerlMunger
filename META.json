@@ -1,13 +1,13 @@
 {
    "resources" : {
-      "repository" : "origin"
+      "repository" : "http://github.com/rjbs/pod-elemental-perlmunger"
    },
    "meta-spec" : {
       "version" : 1.4,
       "url" : "http://module-build.sourceforge.net/META-spec-v1.4.html"
    },
-   "generated_by" : "Dist::Zilla version 1.092990",
-   "version" : "0.093020",
+   "generated_by" : "Dist::Zilla version 1.093290",
+   "version" : "0.093330",
    "name" : "Pod-Elemental-PerlMunger",
    "author" : [
       "Ricardo SIGNES <rjbs@cpan.org>"
@@ -21,3 +21,4 @@
    },
    "abstract" : "a thing that takes a string of Perl and rewrites its documentation"
 }
+

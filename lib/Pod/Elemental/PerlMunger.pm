@@ -1,5 +1,5 @@
 package Pod::Elemental::PerlMunger;
-our $VERSION = '0.093020';
+our $VERSION = '0.093330';
 
 
 use Moose::Role;
@@ -16,6 +16,7 @@ around munge_perl_string => sub {
   my ($orig, $self, $perl, $arg) = @_;
 
   my $ppi_document = PPI::Document->new(\$perl);
+  confess(PPI::Document->errstr) unless $ppi_document;
 
   my @pod_tokens = map {"$_"} @{ $ppi_document->find('PPI::Token::Pod') || [] };
   $ppi_document->prune('PPI::Token::Pod');
@@ -71,7 +72,7 @@ Pod::Elemental::PerlMunger - a thing that takes a string of Perl and rewrites it
 
 =head1 VERSION
 
-version 0.093020
+version 0.093330
 
 =head1 OVERVIEW
 

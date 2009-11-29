@@ -1,0 +1,18 @@
+---
+abstract: 'a thing that takes a string of Perl and rewrites its documentation'
+author:
+  - 'Ricardo SIGNES <rjbs@cpan.org>'
+generated_by: 'Dist::Zilla version 1.093290'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Pod-Elemental-PerlMunger
+requires:
+  Moose: 0
+  PPI: 0
+  Pod::Elemental: 0.092941
+  namespace::autoclean: 0
+resources:
+  repository: http://github.com/rjbs/pod-elemental-perlmunger
+version: 0.093330
