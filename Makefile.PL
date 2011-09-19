@@ -4,22 +4,57 @@ use warnings;
 
 
 
-use ExtUtils::MakeMaker;
+use ExtUtils::MakeMaker 6.30;
 
-WriteMakefile(
-  DISTNAME  => 'Pod-Elemental-PerlMunger',
-  NAME      => 'Pod::Elemental::PerlMunger',
-  AUTHOR    => "Ricardo\ SIGNES\ \<rjbs\@cpan\.org\>",
-  ABSTRACT  => "a\ thing\ that\ takes\ a\ string\ of\ Perl\ and\ rewrites\ its\ documentation",
-  VERSION   => '0.093330',
-  EXE_FILES => [ qw() ],
-  (eval { ExtUtils::MakeMaker->VERSION(6.31) } ? (LICENSE => 'perl') : ()),
-  PREREQ_PM    => {
-    "PPI" => '0',
-    "Pod::Elemental" => '0.092941',
-    "namespace::autoclean" => '0',
-    "Moose" => '0',
+
+
+my %WriteMakefileArgs = (
+  "ABSTRACT" => "a thing that takes a string of Perl and rewrites its documentation",
+  "AUTHOR" => "Ricardo SIGNES <rjbs\@cpan.org>",
+  "BUILD_REQUIRES" => {
+    "Test::More" => "0.96",
+    "strict" => 0,
+    "warnings" => 0
   },
-  test => {TESTS => 't/*.t'}
+  "CONFIGURE_REQUIRES" => {
+    "ExtUtils::MakeMaker" => "6.30"
+  },
+  "DISTNAME" => "Pod-Elemental-PerlMunger",
+  "EXE_FILES" => [],
+  "LICENSE" => "perl",
+  "NAME" => "Pod::Elemental::PerlMunger",
+  "PREREQ_PM" => {
+    "List::MoreUtils" => 0,
+    "Moose" => 0,
+    "Moose::Role" => 0,
+    "PPI" => 0,
+    "Pod::Elemental" => "0.092941",
+    "namespace::autoclean" => 0
+  },
+  "VERSION" => "0.093331",
+  "test" => {
+    "TESTS" => "t/*.t"
+  }
 );
+
+
+unless ( eval { ExtUtils::MakeMaker->VERSION(6.56) } ) {
+  my $br = delete $WriteMakefileArgs{BUILD_REQUIRES};
+  my $pp = $WriteMakefileArgs{PREREQ_PM};
+  for my $mod ( keys %$br ) {
+    if ( exists $pp->{$mod} ) {
+      $pp->{$mod} = $br->{$mod} if $br->{$mod} > $pp->{$mod};
+    }
+    else {
+      $pp->{$mod} = $br->{$mod};
+    }
+  }
+}
+
+delete $WriteMakefileArgs{CONFIGURE_REQUIRES}
+  unless eval { ExtUtils::MakeMaker->VERSION(6.52) };
+
+WriteMakefile(%WriteMakefileArgs);
+
+
 
