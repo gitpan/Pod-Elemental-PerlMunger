@@ -7,5 +7,9 @@ Makefile.PL
 README
 dist.ini
 lib/Pod/Elemental/PerlMunger.pm
+t/00-compile.t
+t/000-report-versions-tiny.t
 t/compile.t
-t/release-pod-syntax.t
+t/perlmunger.t
+xt/release/changes_has_content.t
+xt/release/pod-syntax.t

@@ -12,6 +12,10 @@ my %WriteMakefileArgs = (
   "ABSTRACT" => "a thing that takes a string of Perl and rewrites its documentation",
   "AUTHOR" => "Ricardo SIGNES <rjbs\@cpan.org>",
   "BUILD_REQUIRES" => {
+    "File::Find" => 0,
+    "File::Temp" => 0,
+    "Moose" => 0,
+    "Pod::Elemental" => 0,
     "Test::More" => "0.96",
     "strict" => 0,
     "warnings" => 0
@@ -31,7 +35,7 @@ my %WriteMakefileArgs = (
     "Pod::Elemental" => "0.092941",
     "namespace::autoclean" => 0
   },
-  "VERSION" => "0.093331",
+  "VERSION" => "0.093332",
   "test" => {
     "TESTS" => "t/*.t"
   }
