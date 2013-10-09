@@ -1,6 +1,6 @@
 package Pod::Elemental::PerlMunger;
 {
-  $Pod::Elemental::PerlMunger::VERSION = '0.093332';
+  $Pod::Elemental::PerlMunger::VERSION = '0.093333';
 }
 use Moose::Role;
 # ABSTRACT: a thing that takes a string of Perl and rewrites its documentation
@@ -86,6 +86,7 @@ around munge_perl_string => sub {
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
@@ -94,7 +95,7 @@ Pod::Elemental::PerlMunger - a thing that takes a string of Perl and rewrites it
 
 =head1 VERSION
 
-version 0.093332
+version 0.093333
 
 =head1 OVERVIEW
 
@@ -135,10 +136,9 @@ Ricardo SIGNES <rjbs@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Ricardo SIGNES.
+This software is copyright (c) 2013 by Ricardo SIGNES.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
