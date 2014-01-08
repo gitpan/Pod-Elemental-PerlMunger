@@ -1,6 +1,6 @@
 package Pod::Elemental::PerlMunger;
 {
-  $Pod::Elemental::PerlMunger::VERSION = '0.093333';
+  $Pod::Elemental::PerlMunger::VERSION = '0.100000';
 }
 use Moose::Role;
 # ABSTRACT: a thing that takes a string of Perl and rewrites its documentation
@@ -8,6 +8,7 @@ use Moose::Role;
 
 use namespace::autoclean;
 
+use Encode ();
 use List::MoreUtils qw(any);
 use PPI;
 
@@ -16,7 +17,9 @@ requires 'munge_perl_string';
 around munge_perl_string => sub {
   my ($orig, $self, $perl, $arg) = @_;
 
-  my $ppi_document = PPI::Document->new(\$perl);
+  my $perl_utf8 = Encode::encode('utf-8', $perl, Encode::FB_CROAK);
+
+  my $ppi_document = PPI::Document->new(\$perl_utf8);
   confess(PPI::Document->errstr) unless $ppi_document;
 
   my @pod_tokens = map {"$_"} @{ $ppi_document->find('PPI::Token::Pod') || [] };
@@ -74,7 +77,11 @@ around munge_perl_string => sub {
 
   $doc->{ppi}->prune($end_finder);
 
-  my $new_perl = $doc->{ppi}->serialize;
+  my $new_perl = Encode::decode(
+    'utf-8',
+    $doc->{ppi}->serialize,
+    Encode::FB_CROAK,
+  );
 
   s/\n\s*\z// for $new_perl, $new_pod;
 
@@ -89,13 +96,15 @@ __END__
 
 =pod
 
+=encoding UTF-8
+
 =head1 NAME
 
 Pod::Elemental::PerlMunger - a thing that takes a string of Perl and rewrites its documentation
 
 =head1 VERSION
 
-version 0.093333
+version 0.100000
 
 =head1 OVERVIEW
 
@@ -111,11 +120,14 @@ this:
 
   $object->munge_perl_string($perl_string, \%arg);
 
+C<$perl_string> should be a character string containing Perl source code.
+
 C<%arg> may contain any input for the underlying procedure.  The only key with
 associated meaning is C<filename> which may be omitted.  If given, it should be
 the name of the file whose contents are being munged.
 
-The method will return a string containing the rewritten and combined document.
+The method will return a character string containing the rewritten and combined
+document.
 
 Classes including this role must implement a C<munge_perl_string> that expects
 to be called like this:
@@ -125,7 +137,7 @@ to be called like this:
 C<%doc> will have two entries:
 
   ppi - a PPI::Document of the Perl document with all its Pod removed
-  pod - a Pod::Document with no transformations yet performed
+  pod - a Pod::Elemental::Document with no transformations yet performed
 
 This C<munge_perl_string> method should return a hashref in the same format as
 C<%doc>.
@@ -136,7 +148,7 @@ Ricardo SIGNES <rjbs@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2013 by Ricardo SIGNES.
+This software is copyright (c) 2014 by Ricardo SIGNES.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
