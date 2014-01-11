@@ -54,6 +54,7 @@ eval { $v .= pmver('List::MoreUtils','any version') };
 eval { $v .= pmver('Moose','any version') };
 eval { $v .= pmver('Moose::Role','any version') };
 eval { $v .= pmver('PPI','any version') };
+eval { $v .= pmver('Params::Util','any version') };
 eval { $v .= pmver('Pod::Elemental','0.092941') };
 eval { $v .= pmver('Test::Differences','any version') };
 eval { $v .= pmver('Test::More','0.96') };

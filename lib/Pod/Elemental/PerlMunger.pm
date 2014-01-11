@@ -1,15 +1,53 @@
 package Pod::Elemental::PerlMunger;
 {
-  $Pod::Elemental::PerlMunger::VERSION = '0.100000';
+  $Pod::Elemental::PerlMunger::VERSION = '0.200000';
 }
 use Moose::Role;
 # ABSTRACT: a thing that takes a string of Perl and rewrites its documentation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 use namespace::autoclean;
 
 use Encode ();
 use List::MoreUtils qw(any);
+use Params::Util qw(_INSTANCE);
 use PPI;
 
 requires 'munge_perl_string';
@@ -22,8 +60,36 @@ around munge_perl_string => sub {
   my $ppi_document = PPI::Document->new(\$perl_utf8);
   confess(PPI::Document->errstr) unless $ppi_document;
 
-  my @pod_tokens = map {"$_"} @{ $ppi_document->find('PPI::Token::Pod') || [] };
-  $ppi_document->prune('PPI::Token::Pod');
+  # Use a depth-first queue search
+  my @pod_tokens;
+
+  {
+    my @queue = $ppi_document->children;
+    while (my $element = shift @queue) {
+      if ($element->isa('PPI::Token::Pod')) {
+        my @replacements = $self->_replacements_for($element);
+
+        # save the text for use in building the Pod-only document
+        push @pod_tokens, "$element";
+
+        my $last = $element;
+        while (my $next = shift @replacements) {
+          my $ok = $last->insert_after($next);
+          confess("error inserting replacement!") unless $ok;
+          $last = $next;
+        }
+
+        $element->delete;
+
+        next;
+      }
+
+      if ( _INSTANCE($element, 'PPI::Node') ) {
+        # Depth-first keeps the queue size down
+        unshift @queue, $element->children;
+      }
+    }
+  }
 
   my $finder = sub {
     my $node = $_[1];
@@ -90,6 +156,97 @@ around munge_perl_string => sub {
          : "$new_perl\n\n__END__\n\n$new_pod\n";
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+has replacer => (
+  is  => 'ro',
+  default => 'replace_with_nothing',
+);
+
+sub _replacements_for {
+  my ($self, $element) = @_;
+
+  my $replacer = $self->replacer;
+  return $self->$replacer($element);
+}
+
+
+
+
+
+
+
+
+sub replace_with_nothing { return }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+sub replace_with_comment {
+  my ($self, $element) = @_;
+
+  my $text = "$element";
+
+  (my $pod = $text) =~ s/^/# /mg;
+  my $commented_out = PPI::Token::Comment->new($pod);
+
+  return $commented_out;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+sub replace_with_blank {
+  my ($self, $element) = @_;
+
+  my $text = "$element";
+  my @lines = split /\n/, $text;
+  my $blank = PPI::Token::Whitespace->new("\n" x (@lines));
+
+  return $blank;
+}
+
+
 1;
 
 __END__
@@ -104,7 +261,7 @@ Pod::Elemental::PerlMunger - a thing that takes a string of Perl and rewrites it
 
 =head1 VERSION
 
-version 0.100000
+version 0.200000
 
 =head1 OVERVIEW
 
@@ -141,6 +298,57 @@ C<%doc> will have two entries:
 
 This C<munge_perl_string> method should return a hashref in the same format as
 C<%doc>.
+
+=head1 ATTRIBUTES
+
+=head2 replacer
+
+The replacer is either a method name or code reference used to produces PPI
+elements used to replace removed Pod.  By default, it is
+C<L</replace_with_nothing>>, which just removes Pod tokens entirely.  This
+means that the line numbers of the code in the newly-produced document are
+changed, if the Pod had been interleaved with the code.
+
+See also C<L</replace_with_comment>> and C<L</replace_with_blank>>.
+
+=head1 METHODS
+
+=head2 replace_with_nothing
+
+This method returns nothing.  It's the default C<L</replacer>>.  It's not very
+interesting.
+
+=head2 replace_with_comment
+
+This replacer replaces removed Pod elements with a comment containing their
+text.  In other words:
+
+  =head1 A header!
+
+  This is great!
+
+  =cut
+
+...is replaced with:
+
+  # =head1 A header!
+  #
+  # This is great!
+  #
+  # =cut
+
+=head2 replace_with_blank
+
+This replacer replaces removed Pod elements with vertical whitespace of equal
+line count.  In other words:
+
+  =head1 A header!
+
+  This is great!
+
+  =cut
+
+...is replaced with five blank lines.
 
 =head1 AUTHOR
 
