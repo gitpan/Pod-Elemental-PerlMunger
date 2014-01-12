@@ -1,52 +1,50 @@
 package Pod::Elemental::PerlMunger;
-{
-  $Pod::Elemental::PerlMunger::VERSION = '0.200000';
-}
-use Moose::Role;
 # ABSTRACT: a thing that takes a string of Perl and rewrites its documentation
+$Pod::Elemental::PerlMunger::VERSION = '0.200001';
+use Moose::Role;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# =head1 OVERVIEW
+#
+# This role is to be included in classes that rewrite the documentation of a Perl
+# document, stripping out all the Pod, munging it, and replacing it into the
+# Perl.
+#
+# The only relevant method is C<munge_perl_string>, which must be implemented
+# with a different interface than will be exposed.
+#
+# When calling the C<munge_perl_string> method, arguments should be passed like
+# this:
+#
+#   $object->munge_perl_string($perl_string, \%arg);
+#
+# C<$perl_string> should be a character string containing Perl source code.
+#
+# C<%arg> may contain any input for the underlying procedure.  The only key with
+# associated meaning is C<filename> which may be omitted.  If given, it should be
+# the name of the file whose contents are being munged.
+#
+# The method will return a character string containing the rewritten and combined
+# document.
+#
+# Classes including this role must implement a C<munge_perl_string> that expects
+# to be called like this:
+#
+#   $object->munge_perl_string(\%doc, \%arg);
+#
+# C<%doc> will have two entries:
+#
+#   ppi - a PPI::Document of the Perl document with all its Pod removed
+#   pod - a Pod::Elemental::Document with no transformations yet performed
+#
+# This C<munge_perl_string> method should return a hashref in the same format as
+# C<%doc>.
+#
+# =cut
 
 use namespace::autoclean;
 
 use Encode ();
-use List::MoreUtils qw(any);
+use List::AllUtils qw(any max);
 use Params::Util qw(_INSTANCE);
 use PPI;
 
@@ -60,14 +58,33 @@ around munge_perl_string => sub {
   my $ppi_document = PPI::Document->new(\$perl_utf8);
   confess(PPI::Document->errstr) unless $ppi_document;
 
-  # Use a depth-first queue search
+  my $last_code_elem;
+  my $code_elems = $ppi_document->find(sub {
+    return if grep { $_[1]->isa("PPI::Token::$_") }
+                    qw(Comment Pod Whitespace Separator Data End);
+    return 1;
+  });
+
+  $code_elems ||= [];
+  for my $elem (@$code_elems) {
+    # Really, we might get two elements on the same line, and one could be
+    # later in position because it could have a later column — but we don't
+    # care, because we're only thinking about Pod, which is linewise.
+    next if $last_code_elem
+        and $elem->line_number <= $last_code_elem->line_number;
+
+    $last_code_elem = $elem;
+  }
+
   my @pod_tokens;
 
   {
     my @queue = $ppi_document->children;
     while (my $element = shift @queue) {
       if ($element->isa('PPI::Token::Pod')) {
-        my @replacements = $self->_replacements_for($element);
+        my $after_last = $last_code_elem
+                      && $last_code_elem->line_number > $element->line_number;
+        my @replacements = $self->_replacements_for($element, $after_last);
 
         # save the text for use in building the Pod-only document
         push @pod_tokens, "$element";
@@ -124,7 +141,8 @@ around munge_perl_string => sub {
   my $new_pod = $doc->{pod}->as_pod_string;
 
   my $end_finder = sub {
-    return 1 if $_[1]->isa('PPI::Statement::End') || $_[1]->isa('PPI::Statement::Data');
+    return 1 if $_[1]->isa('PPI::Statement::End')
+             || $_[1]->isa('PPI::Statement::Data');
     return 0;
   };
 
@@ -156,85 +174,103 @@ around munge_perl_string => sub {
          : "$new_perl\n\n__END__\n\n$new_pod\n";
 };
 
-
-
-
-
-
-
-
-
-
-
-
+# =attr replacer
+#
+# The replacer is either a method name or code reference used to produces PPI
+# elements used to replace removed Pod.  By default, it is
+# C<L</replace_with_nothing>>, which just removes Pod tokens entirely.  This
+# means that the line numbers of the code in the newly-produced document are
+# changed, if the Pod had been interleaved with the code.
+#
+# See also C<L</replace_with_comment>> and C<L</replace_with_blank>>.
+#
+# If no further code follows the Pod being replaced, C<L</post_code_replacer>> is
+# used instead.
+#
+# =attr post_code_replacer
+#
+# This attribute is used just like C<L</replacer>>, and defaults to its value,
+# but is used for building replacements for Pod removed after the last hunk of
+# code.  The idea is that if you're only concerned about altering your code's
+# line numbers, you can stop replacing stuff after there's no more code to be
+# affected.
+#
+# =cut
 
 has replacer => (
   is  => 'ro',
   default => 'replace_with_nothing',
 );
 
-sub _replacements_for {
-  my ($self, $element) = @_;
+has post_code_replacer => (
+  is   => 'ro',
+  lazy => 1,
+  default => sub { $_[0]->replacer },
+);
 
-  my $replacer = $self->replacer;
+sub _replacements_for {
+  my ($self, $element, $after_last) = @_;
+
+  my $replacer = $after_last ? $self->replacer : $self->post_code_replacer;
   return $self->$replacer($element);
 }
 
-
-
-
-
-
-
+# =method replace_with_nothing
+#
+# This method returns nothing.  It's the default C<L</replacer>>.  It's not very
+# interesting.
+#
+# =cut
 
 sub replace_with_nothing { return }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# =method replace_with_comment
+#
+# This replacer replaces removed Pod elements with a comment containing their
+# text.  In other words:
+#
+#   =head1 A header!
+#
+#   This is great!
+#
+#   =cut
+#
+# ...is replaced with:
+#
+#   # =head1 A header!
+#   #
+#   # This is great!
+#   #
+#   # =cut
+#
+# =cut
 
 sub replace_with_comment {
   my ($self, $element) = @_;
 
   my $text = "$element";
 
-  (my $pod = $text) =~ s/^/# /mg;
+  (my $pod = $text) =~ s/^(.)/# $1/mg;
+  $pod =~ s/^$/#/mg;
   my $commented_out = PPI::Token::Comment->new($pod);
 
   return $commented_out;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# =method replace_with_blank
+#
+# This replacer replaces removed Pod elements with vertical whitespace of equal
+# line count.  In other words:
+#
+#   =head1 A header!
+#
+#   This is great!
+#
+#   =cut
+#
+# ...is replaced with five blank lines.
+#
+# =cut
 
 sub replace_with_blank {
   my ($self, $element) = @_;
@@ -261,7 +297,7 @@ Pod::Elemental::PerlMunger - a thing that takes a string of Perl and rewrites it
 
 =head1 VERSION
 
-version 0.200000
+version 0.200001
 
 =head1 OVERVIEW
 
@@ -310,6 +346,17 @@ means that the line numbers of the code in the newly-produced document are
 changed, if the Pod had been interleaved with the code.
 
 See also C<L</replace_with_comment>> and C<L</replace_with_blank>>.
+
+If no further code follows the Pod being replaced, C<L</post_code_replacer>> is
+used instead.
+
+=head2 post_code_replacer
+
+This attribute is used just like C<L</replacer>>, and defaults to its value,
+but is used for building replacements for Pod removed after the last hunk of
+code.  The idea is that if you're only concerned about altering your code's
+line numbers, you can stop replacing stuff after there's no more code to be
+affected.
 
 =head1 METHODS
 

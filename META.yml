@@ -4,14 +4,14 @@ author:
   - 'Ricardo SIGNES <rjbs@cpan.org>'
 build_requires:
   Moose: 0
-  Pod::Elemental: 0.092941
+  Pod::Elemental: 0.103000
   Test::More: 0.96
   strict: 0
   warnings: 0
 configure_requires:
   ExtUtils::MakeMaker: 6.30
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 5.010, CPAN::Meta::Converter version 2.133380'
+generated_by: 'Dist::Zilla version 5.011, CPAN::Meta::Converter version 2.133380'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -19,18 +19,18 @@ meta-spec:
 name: Pod-Elemental-PerlMunger
 requires:
   Encode: 0
-  List::MoreUtils: 0
+  List::AllUtils: 0
   Moose: 0
   Moose::Role: 0
   PPI: 0
   Params::Util: 0
-  Pod::Elemental: 0.092941
+  Pod::Elemental: 0.103000
   namespace::autoclean: 0
 resources:
   bugtracker: https://github.com/rjbs/Pod-Elemental-PerlMunger/issues
   homepage: https://github.com/rjbs/Pod-Elemental-PerlMunger
   repository: https://github.com/rjbs/Pod-Elemental-PerlMunger.git
-version: 0.200000
+version: 0.200001
 x_Dist_Zilla:
   perl:
     version: 5.018002
@@ -42,7 +42,7 @@ x_Dist_Zilla:
           phase: runtime
           type: requires
       name: Prereqs
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::Prereqs
       config:
@@ -50,7 +50,7 @@ x_Dist_Zilla:
           phase: test
           type: suggests
       name: TestSuggests
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::Git::GatherDir
       name: '@RJBS/Git::GatherDir'
@@ -89,55 +89,55 @@ x_Dist_Zilla:
     -
       class: Dist::Zilla::Plugin::PruneCruft
       name: '@RJBS/@Filter/PruneCruft'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::ManifestSkip
       name: '@RJBS/@Filter/ManifestSkip'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::MetaYAML
       name: '@RJBS/@Filter/MetaYAML'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::License
       name: '@RJBS/@Filter/License'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::Readme
       name: '@RJBS/@Filter/Readme'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::ExecDir
       name: '@RJBS/@Filter/ExecDir'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::ShareDir
       name: '@RJBS/@Filter/ShareDir'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::MakeMaker
       name: '@RJBS/@Filter/MakeMaker'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::Manifest
       name: '@RJBS/@Filter/Manifest'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::TestRelease
       name: '@RJBS/@Filter/TestRelease'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::ConfirmRelease
       name: '@RJBS/@Filter/ConfirmRelease'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::UploadToCPAN
       name: '@RJBS/@Filter/UploadToCPAN'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::AutoPrereqs
       name: '@RJBS/AutoPrereqs'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::Git::NextVersion
       name: '@RJBS/Git::NextVersion'
@@ -145,19 +145,19 @@ x_Dist_Zilla:
     -
       class: Dist::Zilla::Plugin::PkgVersion
       name: '@RJBS/PkgVersion'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::MetaConfig
       name: '@RJBS/MetaConfig'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::MetaJSON
       name: '@RJBS/MetaJSON'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::NextRelease
       name: '@RJBS/NextRelease'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::Test::ChangesHasContent
       name: '@RJBS/Test::ChangesHasContent'
@@ -165,7 +165,7 @@ x_Dist_Zilla:
     -
       class: Dist::Zilla::Plugin::PodSyntaxTests
       name: '@RJBS/PodSyntaxTests'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::ReportVersions::Tiny
       name: '@RJBS/ReportVersions::Tiny'
@@ -177,7 +177,7 @@ x_Dist_Zilla:
           phase: test
           type: requires
       name: '@RJBS/TestMoreWithSubtests'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::PodWeaver
       config:
@@ -285,37 +285,37 @@ x_Dist_Zilla:
     -
       class: Dist::Zilla::Plugin::FinderCode
       name: ':InstallModules'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::FinderCode
       name: ':IncModules'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::FinderCode
       name: ':TestFiles'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::FinderCode
       name: ':ExecFiles'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::FinderCode
       name: ':ShareFiles'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::FinderCode
       name: ':MainModule'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::FinderCode
       name: ':AllFiles'
-      version: 5.010
+      version: 5.011
     -
       class: Dist::Zilla::Plugin::FinderCode
       name: ':NoFiles'
-      version: 5.010
+      version: 5.011
   zilla:
     class: Dist::Zilla::Dist::Builder
     config:
       is_trial: 0
-    version: 5.010
+    version: 5.011

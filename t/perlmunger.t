@@ -1,13 +1,12 @@
 use strict;
 use warnings;
 
-use Test::More 0.88;        # done_testing
-plan tests => 5;            # Comment this line out while adding tests
+use Test::More;
 
 # Load Test::Differences, if available:
 BEGIN {
   # SUGGEST PREREQ: Test::Differences
-  if (eval "use Test::Differences; 1") {
+  if (0 and eval "use Test::Differences; 1") {
     # Not all versions of Test::Differences support changing the style:
     eval { Test::Differences::unified_diff() }
   } else {
@@ -30,152 +29,51 @@ BEGIN {
 #---------------------------------------------------------------------
 sub test
 {
-  my ($name, $in, $out) = @_;
+  my ($name, $in, $out, $arg) = @_;
 
   local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-  eq_or_diff(Pod_Identity->new->munge_perl_string($in), $out, $name);
+  open my $in_fh, "<:raw:bytes", "t/corpus/$in"
+    or die "error opening $in: $!";
+  my $in_pod = do { local $/; <$in_fh> };
+
+  open my $out_fh, "<:raw:bytes", "t/corpus/$out"
+    or die "error opening $out: $!";
+  my $want = do { local $/; <$out_fh> };
+
+  my $have = Pod_Identity->new($arg ? $arg : ())->munge_perl_string($in_pod);
+
+  eq_or_diff($have, $want, $name);
 }
 
-#=====================================================================
-test 'POD after END' => <<'END IN 1', <<'END OUT 1';
-my $hello = 'world';
+test 'no END' => "simple.in.txt", "simple.out.txt";
 
-__END__
+test 'POD after END' => "after-end.txt", "simple.out.txt";
 
-=head1 NAME
+test 'before and after END' => "straddle-end.in.txt", "straddle-end.out.txt";
 
-Hello World
+test 'extra whitespace' => "extra-ws.in.txt", "simple.out.txt";
 
-END IN 1
-my $hello = 'world';
+test 'DATA section' => "data-section.in.txt", "data-section.out.txt";
 
-__END__
+test 'pod mid-code' => "mid-code.in.txt", "mid-code.out.txt";
 
-=pod
+# We test for this separately because prior to Pod::Elemental 0.103, documents
+# would always stringify to add an extra =pod and =cut around the edges, which
+# was gross.  This test identified the bug, now fixed i Pod::Elemental.
+test 'pod mid-code, with =pod' => "mid-code-pod.in.txt", "mid-code-pod.out.txt";
 
-=head1 NAME
+test 'pod mid-code, replace with comments',
+     "mid-code.in.txt", "mid-code-comm.out.txt",
+     { replacer => 'replace_with_comment' };
 
-Hello World
+test 'pod straddles code, replace with comments',
+     "straddle-code.in.txt", "straddle-code-comm.out.txt",
+     { replacer => 'replace_with_comment' };
 
-=cut
-END OUT 1
+test 'pod straddles code, replace with comments',
+     "straddle-code.in.txt", "straddle-code-comm-nothing.out.txt",
+     { replacer => 'replace_with_comment',
+       post_code_replacer => 'replace_with_nothing' };
 
-#---------------------------------------------------------------------
-test 'no END' => <<'END IN 2', <<'END OUT 2';
-my $hello = 'world';
-
-=head1 NAME
-
-Hello World
-
-END IN 2
-my $hello = 'world';
-
-__END__
-
-=pod
-
-=head1 NAME
-
-Hello World
-
-=cut
-END OUT 2
-
-#---------------------------------------------------------------------
-test 'before and after END' => <<'END IN 3', <<'END OUT 3';
-my $hello = 'world';
-
-=head1 NAME
-
-Hello World
-
-=cut
-
-__END__
-
-=head2 DESCRIPTION
-
-No biggie.
-
-END IN 3
-my $hello = 'world';
-
-__END__
-
-=pod
-
-=head1 NAME
-
-Hello World
-
-=cut
-
-=head2 DESCRIPTION
-
-No biggie.
-
-=cut
-END OUT 3
-
-#---------------------------------------------------------------------
-test 'extra whitespace' => <<'END IN 4', <<'END OUT 4';
-my $hello = 'world';
-
-
-
-__END__
-
-
-
-=head1 NAME
-
-Hello World
-
-END IN 4
-my $hello = 'world';
-
-__END__
-
-=pod
-
-=head1 NAME
-
-Hello World
-
-=cut
-END OUT 4
-
-#---------------------------------------------------------------------
-test 'DATA section' => <<'END IN 5', <<'END OUT 5';
-my $hello = 'world';
-
-=head1 NAME
-
-Hello World
-
-=cut
-
-__DATA__
-
-To be read.
-END IN 5
-my $hello = 'world';
-
-=pod
-
-=head1 NAME
-
-Hello World
-
-=cut
-=cut
-
-__DATA__
-
-To be read.
-END OUT 5
-
-#---------------------------------------------------------------------
 done_testing;

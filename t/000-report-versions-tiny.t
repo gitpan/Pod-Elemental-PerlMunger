@@ -50,12 +50,12 @@ sub pmver {
 
 eval { $v .= pmver('Encode','any version') };
 eval { $v .= pmver('ExtUtils::MakeMaker','6.30') };
-eval { $v .= pmver('List::MoreUtils','any version') };
+eval { $v .= pmver('List::AllUtils','any version') };
 eval { $v .= pmver('Moose','any version') };
 eval { $v .= pmver('Moose::Role','any version') };
 eval { $v .= pmver('PPI','any version') };
 eval { $v .= pmver('Params::Util','any version') };
-eval { $v .= pmver('Pod::Elemental','0.092941') };
+eval { $v .= pmver('Pod::Elemental','0.103000') };
 eval { $v .= pmver('Test::Differences','any version') };
 eval { $v .= pmver('Test::More','0.96') };
 eval { $v .= pmver('namespace::autoclean','any version') };
